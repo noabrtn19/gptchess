@@ -2,3 +2,4 @@ output/
 stockfish/
 games/
 games_yosha/
+.venv
