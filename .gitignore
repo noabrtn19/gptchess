@@ -2,4 +2,6 @@ output/
 stockfish/
 games/
 games_yosha/
-.venv
+.venv/
+.ipynb_checkpoints/
+__pycache__/
