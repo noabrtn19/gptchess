@@ -5,3 +5,4 @@ games_yosha/
 .venv/
 .ipynb_checkpoints/
 __pycache__/
+*.ps1

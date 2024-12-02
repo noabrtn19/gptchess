@@ -17,7 +17,7 @@ from openai import OpenAI
 from parsing_moves_gpt import extract_move_chatgpt
 import argparse
 
-print(os.getenv('OPENAI_API_URL'))
+print(os.getenv('OPENAI_API_URL', 'https://api.openai.com/v1'))
 print(os.getenv('OPENAI_API_KEY'))
 
 client = OpenAI(
@@ -388,23 +388,23 @@ def play_game(
 
     return pgn
       
-BASE_PGN_HEADERS =  """[Event "FIDE World Championship Match 2024"]
-[Site "Los Angeles, USA"]
-[Date "2024.12.01"]
-[Round "5"]
-[White "Carlsen, Magnus"]
-[Black "Nepomniachtchi, Ian"]
-[Result "1-0"]
-[WhiteElo "2885"]
-[WhiteTitle "GM"]
-[WhiteFideId "1503014"]
-[BlackElo "2812"]
-[BlackTitle "GM"]
-[BlackFideId "4168119"]
-[TimeControl "40/7200:20/3600:900+30"]
-[UTCDate "2024.11.27"]
-[UTCTime "09:01:25"]
-[Variant "Standard"]
+BASE_PGN_HEADERS =  """[Event \"FIDE World Championship Match 2024\"]
+[Site \"Los Angeles, USA\"]
+[Date \"2024.12.01\"]
+[Round \"5\"]
+[White \"Carlsen, Magnus\"]
+[Black \"Nepomniachtchi, Ian\"]
+[Result \"1-0\"]
+[WhiteElo \"2885\"]
+[WhiteTitle \"GM\"]
+[WhiteFideId \"1503014\"]
+[BlackElo \"2812\"]
+[BlackTitle \"GM\"]
+[BlackFideId \"4168119\"]
+[TimeControl \"40/7200:20/3600:900+30\"]
+[UTCDate \"2024.11.27\"]
+[UTCTime \"09:01:25\"]
+[Variant \"Standard\"]
 """
 
 # generate a random PGN with the first 10 random moves of a random game
@@ -459,13 +459,16 @@ parser.add_argument('-o', '--temp', type=float, nargs='?', required=True)
 parser.add_argument('-c', '--chat', action='store_true')
 parser.add_argument('-l', '--rolemessage', type=str, nargs='?')
 
-parser.add_argument('-p', '--pgn', type=str, nargs='?')
 parser.add_argument('-w', '--white', action='store_true')
 parser.add_argument('-n', '--moves', type=int, required=True)
+parser.add_argument('-p', '--pgn', type=str, required=True)
 
 parsed = parser.parse_args()
 
 print(parsed)
+pgn = BASE_PGN_HEADERS
+with open(parsed.pgn) as f:
+    pgn = f.read()
 
 chess_config = ChessEngineConfig(
     skill_level=parsed.skill,
@@ -488,8 +491,8 @@ print('Play game...')
 play_game(
     chess_config, 
     gpt_config,
-    base_pgn=DEFAULT_PGN if parser.pgn == None else parser.pgn, 
-    nmove=parser.moves, 
+    base_pgn=pgn, 
+    nmove=parsed.moves, 
     white_piece=False
 )
 
