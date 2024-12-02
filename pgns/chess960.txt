@@ -14,4 +14,6 @@
 [TimeControl "40/7200:20/3600:900+30"]
 [UTCDate "2024.11.27"]
 [UTCTime "09:01:25"]
-[Variant "Standard"]
+[Variant "Chess960"]
+[SetUp "1"]
+[FEN "bqnbnrkr/pppppppp/8/8/8/8/PPPPPPPP/BQNBNRKR w KQkq - 1 0"]

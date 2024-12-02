@@ -177,11 +177,19 @@ def play_game(
     
     engine_parameters = stockfish.get_parameters()
     save_metainformation_experiment(dir_name, chess_config, gpt_config, pgn, nmove, white_piece, engine_parameters)
-
+    
+    
     board = chess.Board()
+    g = chess.pgn.read_game(io.StringIO(base_pgn))
+
+    if g.headers["Variant"] == "Chess960":
+        print("Chess960 detected.")
+        stockfish.set_fen_position(g.headers["FEN"])
+        print(stockfish.get_board_visual())
+        board = chess.Board(g.headers["FEN"])
+    
     if nmove > 1: # if nmove > 1, we need to load the PGN
         # load a PGN file
-        g = chess.pgn.read_game(io.StringIO(base_pgn))
         board = g.end().board()
         stockfish.set_position([str(m) for m in g.mainline_moves()])
     
