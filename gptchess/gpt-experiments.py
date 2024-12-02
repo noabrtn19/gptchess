@@ -2,26 +2,31 @@
 
 import io
 import random
-from stockfish import Stockfish
-
 import os
-from openai import OpenAI
+import uuid
 
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+from dataclasses import dataclass
+from dataclasses import asdict
+
 import chess
 import chess.pgn
 
-
-from dataclasses import dataclass
+from stockfish import Stockfish
+from openai import OpenAI
 
 from parsing_moves_gpt import extract_move_chatgpt
+import argparse
 
-import uuid
+print(os.getenv('OPENAI_API_URL'))
+print(os.getenv('OPENAI_API_KEY'))
 
-# TODO: The 'openai.organization' option isn't read in the client API. You will need to pass it when you instantiate the client, e.g. 'OpenAI(organization="")'
-# openai.organization = "" 
+client = OpenAI(
+    base_url=os.getenv('OPENAI_API_URL'),
+    api_key=os.getenv('OPENAI_API_KEY')
+)
 
-BASE_PGN = """[Event "FIDE World Championship Match 2024"]
+
+DEFAULT_PGN = """[Event "FIDE World Championship Match 2024"]
 [Site "Los Angeles, USA"]
 [Date "2024.12.01"]
 [Round "5"]
@@ -41,11 +46,11 @@ BASE_PGN = """[Event "FIDE World Championship Match 2024"]
 
 1."""
 
-
 def setup_directory():
-    OUTPUT_DIR = "games_yosha/"
+    OUTPUT_DIR = "output/"
     dir_name = OUTPUT_DIR + "game" + str(uuid.uuid4())
     os.makedirs(dir_name, exist_ok=True)
+
     return dir_name
 
 def log_msg(dir_name, message):
@@ -73,10 +78,6 @@ class GPTConfig:
     chat_gpt: bool = False
     system_role_message: str = None
     model_gpt: str = "gpt-3.5-turbo-instruct"
-
-from dataclasses import asdict
-
-import os
 
 @dataclass
 class ChessEngineConfig:
@@ -110,8 +111,6 @@ def save_metainformation_experiment(dir_name, chess_config: ChessEngineConfig, g
         metainformation_file.write(f"system_role_message: {gpt_config.system_role_message if gpt_config.system_role_message else 'None'}\n")
 
 
-
-
 # based on https://github.com/official-stockfish/Stockfish/issues/3635#issuecomment-1159552166
 def skill_to_elo(n):
     correspondence_table = {
@@ -141,13 +140,7 @@ def skill_to_elo(n):
     if n in correspondence_table:
         return correspondence_table[n]
     else:
-        raise ValueError("Input should be between 0 and 19 inclusive.")
-
-
-
-
-from dataclasses import dataclass
-
+        raise ValueError("Input should be between 0 and 20 inclusive.")
 
 
 # TODO: chess engine: SF, random, Leela, etc.
@@ -156,8 +149,13 @@ from dataclasses import dataclass
 # RANDOM_ENGINE: if True, GPT plays against a random engine (not Stockfish)
 # model_gpt: GPT model to use
 # nmove = number of move when the game starts: 
-def play_game(chess_config: ChessEngineConfig, gpt_config: GPTConfig, base_pgn=BASE_PGN, nmove=1, white_piece=True):
-# def play_game(skill_level, base_pgn=BASE_PGN, nmove=1, random_engine = False, model_gpt = "gpt-3.5-turbo-instruct", white_piece=True, engine_depth=20, engine_time=None, temperature=0, max_tokens=4, chat_gpt=False, system_role_message = None):
+def play_game(
+        chess_config: ChessEngineConfig, 
+        gpt_config: GPTConfig, 
+        base_pgn=DEFAULT_PGN, 
+        nmove=1, 
+        white_piece=True
+    ):
 
     pgn = base_pgn
     skill_level = chess_config.skill_level
@@ -171,17 +169,12 @@ def play_game(chess_config: ChessEngineConfig, gpt_config: GPTConfig, base_pgn=B
     system_role_message = gpt_config.system_role_message
     model_gpt = gpt_config.model_gpt
 
-
     dir_name = setup_directory()
     print(dir_name)
     
-
-    # stockfish = Stockfish("./stockfish/stockfish/stockfish-ubuntu-x86-64-avx2", depth=engine_depth)
     stockfish = Stockfish("./stockfish/stockfish/stockfish-ubuntu-x86-64-avx2", depth=engine_depth) # , depth=engine_depth) "/home/mathieuacher/Downloads/Enko/EnkoChess_290818") # 
-    # stockfish.set_elo_rating(engine_elo)
     stockfish.set_skill_level(skill_level)
     
-
     engine_parameters = stockfish.get_parameters()
     save_metainformation_experiment(dir_name, chess_config, gpt_config, pgn, nmove, white_piece, engine_parameters)
 
@@ -199,13 +192,16 @@ def play_game(chess_config: ChessEngineConfig, gpt_config: GPTConfig, base_pgn=B
     # If GPT plays as white, it should make the first move.
     if white_piece:
         
+        msgs = []
+
+        if system_role_message == None:
+            msgs.append({"role": "system", "content": pgn})
+            
+        msgs.append({"role": "user", "content": pgn})
 
         if (chat_gpt):
             response = client.chat.completions.create(model=model_gpt,
-            messages=[
-                {"role": "system", "content": system_role_message},
-                {"role": "user", "content": pgn}        
-            ], 
+            messages=msgs,
             temperature=temperature,
             max_tokens=max_tokens)
         else:
@@ -220,7 +216,6 @@ def play_game(chess_config: ChessEngineConfig, gpt_config: GPTConfig, base_pgn=B
             resp = response.choices[0].text # completion 
 
         record_session(dir_name, pgn, resp)      
-
 
         if chat_gpt:
             san_move = extract_move_chatgpt(resp)
@@ -278,14 +273,10 @@ def play_game(chess_config: ChessEngineConfig, gpt_config: GPTConfig, base_pgn=B
             n += 1
             pgn += f" {n}."
 
-
-       
-
-            
-        
-
         if (chat_gpt):
-            msgs = [{"role": "system", "content": system_role_message}]
+            msgs = []
+            if system_role_message:
+                msgs.append({"role": "system", "content": system_role_message})
         
             nply = 1
             temp_board = chess.pgn.Game().board()
@@ -309,10 +300,7 @@ def play_game(chess_config: ChessEngineConfig, gpt_config: GPTConfig, base_pgn=B
             log_msg(dir_name, str(msgs))
 
             response = client.chat.completions.create(model=model_gpt,
-            messages=msgs, # [
-                # {"role": "system", "content": system_role_message},
-                # {"role": "user", "content": pgn}
-            # ], 
+            messages=msgs,
             temperature=temperature,
             max_tokens=max_tokens)
         else:
@@ -341,7 +329,6 @@ def play_game(chess_config: ChessEngineConfig, gpt_config: GPTConfig, base_pgn=B
             # perhaps add a PGN comment with the unknown SAN
             unknown_san = san_move
             break
-            
 
         uci_move = move.uci()
         pgn += f" {san_move}"
@@ -390,8 +377,6 @@ def play_game(chess_config: ChessEngineConfig, gpt_config: GPTConfig, base_pgn=B
 
     if unknown_san is not None:
         game.headers["UnknownSAN"] = unknown_san
-
-
 
     # export game as PGN string
     pgn_final = game.accept(chess.pgn.StringExporter())
@@ -442,22 +427,6 @@ def mk_randomPGN(max_plies = 40):
 
     return pgn
 
-
-
-BASE_PGN_HEADERS_ALTERED =  """[Event "Chess tournament"]
-[Site "Rennes FRA"]
-[Date "2023.12.09"]
-[Round "7"]
-[White "MVL, Magnus"]
-[Black "Ivanchuk, Ian"]
-[Result "1-0"]
-[WhiteElo "2737"]
-[BlackElo "2612"]
-
-1."""
-
-
-
 ### basic: starting position, classical game
 # play_game(skill_level=5, base_pgn=BASE_PGN, nmove=1, random_engine=False, model_gpt = "gpt-3.5-turbo-instruct", white_piece=False, engine_depth=15, engine_time=None, temperature=0.8, chat_gpt=False)
 # play_game(skill_level=5, base_pgn=BASE_PGN, nmove=1, random_engine=False, model_gpt = "gpt-3.5-turbo", white_piece=True, engine_depth=15, engine_time=None, temperature=0.0, chat_gpt=True, max_tokens=6)
@@ -473,46 +442,58 @@ BASE_PGN_HEADERS_ALTERED =  """[Event "Chess tournament"]
 # play_game(skill_level=4, base_pgn=BASE_PGN, nmove=1, random_engine=False, model_gpt = "gpt-3.5-turbo-instruct", white_piece=False, engine_depth=15, engine_time=None, temperature=0.0, chat_gpt=False, max_tokens=5)
 
 # Create instances of ChessEngineConfig and GPTConfig using the provided parameters.
+
+parser = argparse.ArgumentParser(
+    prog="ChessGPT",
+    description="Play chess games with ChatGPT",
+    epilog="Read the doc en passant"
+)
+
+parser.add_argument('-s', '--skill', type=int, required=True)
+parser.add_argument('-d', '--depth', type=int, required=True)
+parser.add_argument('-t', '--time', type=int)
+parser.add_argument('-r', '--random', action='store_true')
+
+parser.add_argument('-m', '--model', type=str, nargs='?', required=True)
+parser.add_argument('-o', '--temp', type=float, nargs='?', required=True)
+parser.add_argument('-c', '--chat', action='store_true')
+parser.add_argument('-l', '--rolemessage', type=str, nargs='?')
+
+parser.add_argument('-p', '--pgn', type=str, nargs='?')
+parser.add_argument('-w', '--white', action='store_true')
+parser.add_argument('-n', '--moves', type=int, required=True)
+
+parsed = parser.parse_args()
+
+print(parsed)
+
 chess_config = ChessEngineConfig(
-    skill_level=6,
-    engine_depth=15,
-    engine_time=None,
-    random_engine=False
+    skill_level=parsed.skill,
+    engine_depth=parsed.depth,
+    engine_time=parsed.time,
+    random_engine=parsed.random
 )
 
 gpt_config = GPTConfig(
-    model_gpt="gpt-3.5-turbo-instruct",
-    temperature=0.0,
+    model_gpt=parsed.model,
+    temperature=parsed.temp,
     max_tokens=5,
-    chat_gpt=False,
-    system_role_message=None  # Since it wasn't provided in the original call
+    chat_gpt=parsed.chat,
+    system_role_message=parsed.rolemessage  # Since it wasn't provided in the original call
 )
 
-YOSHA_PGN = """[White "Carlsen, Magnus"]  
-[Black "Kasparov, Garry"]  
-[WhiteElo "2882"]  
-[BlackElo "2851"] 
-[Result "0-1"]
-
-1."""
-
+print('Play game...')
 
 # Call the refactored function.
-play_game(chess_config, gpt_config, base_pgn=YOSHA_PGN, nmove=1, white_piece=False)
+play_game(
+    chess_config, 
+    gpt_config,
+    base_pgn=DEFAULT_PGN if parser.pgn == None else parser.pgn, 
+    nmove=parser.moves, 
+    white_piece=False
+)
 
-
-#
-# play_game(skill_level=-1, base_pgn='It is your turn! You have white pieces. Please complete the chess game using PGN notation. 1.', nmove=1, random_engine=True, model_gpt = "gpt-4", white_piece=True, engine_depth=15, engine_time=None, temperature=0.0, chat_gpt=True, max_tokens=6, system_role_message="You are a professional, top international grand-master chess player. We are playing a serious chess game, using PGN notation. When it's your turn, you have to play your move using PGN notation.")
-# play_game(skill_level=-1, base_pgn='It is your turn! You have white pieces. Please complete the chess game using PGN notation. 1.', nmove=1, random_engine=True, model_gpt = "gpt-3.5-turbo", white_piece=True, engine_depth=15, engine_time=None, temperature=0.0, chat_gpt=True, max_tokens=6, system_role_message="You are a professional, top international grand-master chess player. We are playing a serious chess game, using PGN notation. When it's your turn, you have to play your move using PGN notation.")
-
-# play_game(skill_level=3, base_pgn='It is your turn! You have white pieces. Please complete the chess game using PGN notation. 1.', nmove=1, random_engine=False, model_gpt = "gpt-3.5-turbo", white_piece=True, engine_depth=15, engine_time=None, temperature=0.0, chat_gpt=True, max_tokens=6, system_role_message="You are a professional, top international grand-master chess player. We are playing a serious chess game, using PGN notation. When it's your turn, you have to play your move using PGN notation.")
-
-# playing with random engine!
-# play_game(skill_level=-1, base_pgn=BASE_PGN, random_engine=True, nmove=1, model_gpt = "gpt-3.5-turbo-instruct", white_piece=False, engine_depth=15, engine_time=None, temperature=0.0)
-
-# playing with altered prompt
-# play_game(skill_level=4, base_pgn=BASE_PGN_HEADERS_ALTERED, nmove=1, random_engine=False, model_gpt = "gpt-3.5-turbo-instruct", white_piece=True, engine_depth=15, engine_time=None, temperature=0.0)
-
+print('Game done!')
 
 # TODO: random engine
 
