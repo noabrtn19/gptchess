@@ -17,6 +17,51 @@ This repository has two goals:
     You also need to download Stockfish (we used the 16 version) from https://drive.google.com/drive/folders/1nzrHOyZMFm4LATjF5ToRttCU0rHXGkXI and put the source code in a `stockfish/stockfish` folder.
 
 2. **Setting Up the Environment**  
+  - To reproduce the collection of the data, use the `collection.Dockerfile`.
+    ```bash
+      docker build -f collection.Dockerfile -t chess
+    ```
+    ```bash
+    docker run \
+    -e OPENAI_API_URL=<URL> \
+    -e OPENAI_API_KEY=<KEY> \
+    -v <output-folder>:/output \
+    -v <pgn-folder>:/pgns \
+    chess [... parameters]
+    ```
+
+    Example of command to play a game using GroqAPI & Base PGN
+    ```bash
+    docker run \
+    -e OPENAI_API_URL="https://api.groq.com/openai/v1" \
+    -e OPENAI_API_KEY=<KEY> \
+    -v ./output:/output \
+    -v ./pgns:/pgns \
+    chess \
+    -s 6 \
+    -d 15 \
+    -m 'llama-3.1-70b-versatile' \
+    -o 0.0 \
+    -n 1 \
+    -c \
+    -p /pgns/base.txt
+    ```
+
+        Example of command to play a game using ChatGPT & Chess960 PGN
+    ```bash
+    docker run \
+    -e OPENAI_API_KEY=<KEY> \
+    -v ./output:/output \
+    -v ./pgns:/pgns \
+    chess \
+    -s 6 \
+    -d 15 \
+    -m 'gpt-3.5-turbo-instruct' \
+    -o 0.0 \
+    -n 1 \
+    -p /pgns/chess960.txt
+    ```
+
    - To reproduce the analysis of the data, simply build the `analysis.Dockerfile` and run the container with the following volume.
     On linux:
      ```bash
@@ -25,17 +70,16 @@ This repository has two goals:
      ```
 
      By default, it will use the data in `games.tar.gz`, but you can add `-e GPTCHESS_GAMES_FILE = "myfile.tar.gz"` to docker run, in order to use a different tar.gz file.
-     
-    - todo : pour la collection ?
 
 3. **Reproducing Results**  
    - The container will automatically execute all the `analysis.ipynb` notebook and produce an html file in the analysis_files folder. You can read this file or the notebook itself, to see the results by yourself.
-   - todo: pour la collection ?
+   - The container will provide a CLI-tool that allows you to reproduce experiments using the parameters you want. Exploration of a variability factor space can be done through scripting (eg. using Bash)
     
 ### Encountered Issues and Improvements
     Several small adaptations were made from the original article.
     - several pandas methods (like `DataFrame.append`) were deprecated in the latests versions; we replaced them.
     - the code for data collection (in `gpt-experiment.py`) and analysis (in `analysis.ipynb`) was greatly cleaned up and reduced, to focus only on the main results of the study (since a lot of digressions were made).
+    - The script now takes cli parameters to adapt the experimentation.
 
 ### Is the Original Study Reproducible?
     The main results of the original study have been successfully reproduced: by comparing them quantitatively to those of the article, we can see that we obtain the exact same conclusions. To sum them up:
