@@ -65,9 +65,14 @@ class JupyterChessPGN:
         else:
             return # print("end of the game")
     
-    def showUI(self):    
+    def showUI(self, print_pgn=False):    
         clear_output()
-        self.board = chess.Board()
+        if print_pgn:
+            print(self.game)
+        if "FEN" in self.game.headers:
+            self.board = chess.Board(self.game.headers["FEN"])
+        else:
+            self.board = chess.Board()
         self.moves = list(self.game.mainline_moves())
         self.nm = 0
         if (self.out_position is not None):

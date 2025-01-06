@@ -28,7 +28,7 @@ This repository has two goals:
     
     On linux:
      ```bash
-     docker build -f analysis.Dockerfile -t gpt_chess_analysis
+     docker build -f analysis.Dockerfile -t gpt_chess_analysis .
      docker run --rm -v "$(pwd):/app/volume" gpt_chess_analysis
      ```
 
