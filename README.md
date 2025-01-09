@@ -142,9 +142,10 @@ This repository has two goals:
 2. **Presentation and Analysis of Results**  
    - llama-3.3-70b-versatile against Stockfish (normal chess):
    20 total games, with an average length of 10 moves.
-   Out of 20 games, 0 were legal games and 20 were illegal games, hence 100% of illegal games.
-   
-   Illegal moves are:
+Out of 20 games, 0 were legal games and 20 were illegal games, hence 100% of illegal games.
+
+Illegal moves are:
+
 | illegal_move   |   count |
 |:---------------|--------:|
 | Qe7            |      10 |
@@ -162,11 +163,12 @@ These games seem to indicate that Llama is not able to play a full legal chess g
 
 Contrary to GPT 3.5-turbo-instruct, the Llama model doesn't make an illegal move by "resigning" the game (1-0), but seems to produce "real" illegal moves. Interestingly, the "Qe7" illegal move is particularly recurrent in our (small!) dataset (the recurrent pattern here is that the LLM didn't acknowledge the black bishop on e7, obstructing black's queen from going to that square).
 
-   - llama-3.3-70b-versatile against Stockfish (chess960):
-   
-   20 total games, with an average length of 0.5 move.
-   
-   Illegal moves are:
+- **llama-3.3-70b-versatile against Stockfish (chess960):**
+
+20 total games, with an average length of 0.5 move.
+
+Illegal moves are:
+
 | illegal_move   |   count |
 |:---------------|--------:|
 | Since          |      12 |
@@ -174,7 +176,6 @@ Contrary to GPT 3.5-turbo-instruct, the Llama model doesn't make an illegal move
 | The            |       3 |
 
 As you can see, despite indicating clearly what we want in the role given to the model, Llama doesn't even try to complete the PGN.
-
 
    - GPT 3.5-turbo-instruct against Stockfish (chess960):
   13 total games, with an average length of 3.5 moves.
