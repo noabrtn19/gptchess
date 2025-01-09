@@ -66,12 +66,12 @@ This repository has two goals:
    docker run --rm -v "$(pwd):/app/volume" gpt_chess_analysis
    ```
    
-   The container will automatically execute all the `analysis.ipynb` notebook and produce an html file in the analysis_files folder. You can read this file or the notebook itself, to see the results by yourself.
+   The container will automatically execute all the `reproducibility_analysis.ipynb` notebook and export is as an HTML file in the analysis_files folder. You can read this file or the notebook itself, to see the results by yourself.
 
 ### Encountered Issues and Improvements
    Several small adaptations were made from the original article.
    - several pandas methods (like `DataFrame.append`) were deprecated in the latests versions; we replaced them.
-   - the code for data collection (in `gpt-experiment.py`) and analysis (in `analysis.ipynb`) was greatly cleaned up and reduced, to focus only on the main results of the study (since a lot of digressions were made).
+   - the code for data collection (in `gpt-experiment.py`) and analysis (in `reproducibility_analysis.ipynb`) was greatly cleaned up and reduced, to focus only on the main results of the study (since a lot of digressions were made).
    - The script now takes cli parameters to adapt the experimentation.
 
 ### Is the Original Study Reproducible?
@@ -143,7 +143,20 @@ This repository has two goals:
     -l "Play a chess960 game completing one move of the PGN"
     ```
 
-2. **Presentation and Analysis of Results**  
+    All the generated games, for the replication phase, were gathered in the "games_replication.tar.gz" file. To run the corresponding analysis notebook and export it as HTML:
+   ```bash
+    docker build -f analysis.Dockerfile -t gpt_chess_analysis .
+    ```
+   ``bash
+    docker run --rm -v "$(pwd):/app/volume" \
+    -e GPTCHESS_GAMES_FILE="games_replication.tar.gz" \
+    -e NOTEBOOK="replication_analysis.ipynb" \
+    gpt_chess_analysis
+    ```
+    This will automatically execute all the `replication_analysis.ipynb` notebook and export is as an HTML file in the analysis_files folder. You can read this file or the notebook itself, to see the results by yourself.
+
+
+3. **Presentation and Analysis of Results**  
    - llama-3.3-70b-versatile against Stockfish (normal chess):
    20 total games, with an average length of 10 moves.
 Out of 20 games, 0 were legal games and 20 were illegal games, hence 100% of illegal games.
