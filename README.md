@@ -107,36 +107,40 @@ This repository has two goals:
    - using another LLM: Llama
    - playing chess960
 
-    Example of command to play a game using Groq LLama3-70b & Base PGN
+    Here is the parameters we used to generate 20 standard games between Groq LLama3-70b and Stockfish:
     ```bash
     docker run \
-    -e OPENAI_API_URL="https://api.groq.com/openai/v1" \
-    -e OPENAI_API_KEY=<KEY> \
-    -v ./output:/output \
-    -v ./pgns:/pgns \
+    -e OPENAI_API_KEY=<API_KEY> \
+    -e OPENAI_API_URL='https://api.groq.com/openai/v1' \
+    -v .\output_3:/output \
+    -v .\pgns:/pgns \
     chess \
     -s 6 \
     -d 15 \
-    -m 'llama-3.1-70b-versatile' \
+    -m 'llama-3.3-70b-versatile' \
     -o 0.0 \
     -n 1 \
     -c \
-    -p /pgns/base.txt
+    -p /pgns/base.txt \
+    -l "Play a chess game completing one move of the PGN"
     ```
 
-    Example of command to play a game using ChatGPT & Chess960 PGN
+    Here is the parameters we used to generate 20 chess960 games between Groq LLama3-70b and Stockfish:
     ```bash
     docker run \
-    -e OPENAI_API_KEY=<KEY> \
-    -v ./output:/output \
-    -v ./pgns:/pgns \
+    -e OPENAI_API_KEY=<API_KEY> \
+    -e OPENAI_API_URL='https://api.groq.com/openai/v1' \
+    -v .\output_3:/output \
+    -v .\pgns:/pgns \
     chess \
     -s 6 \
     -d 15 \
-    -m 'gpt-3.5-turbo-instruct' \
+    -m 'llama-3.3-70b-versatile' \
     -o 0.0 \
     -n 1 \
-    -p /pgns/chess960.txt
+    -c \
+    -p /pgns/chess960.txt \
+    -l "Play a chess960 game completing one move of the PGN"
     ```
 
 2. **Presentation and Analysis of Results**  
