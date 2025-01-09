@@ -147,7 +147,7 @@ This repository has two goals:
    ```bash
     docker build -f analysis.Dockerfile -t gpt_chess_analysis .
     ```
-   ``bash
+   ```bash
     docker run --rm -v "$(pwd):/app/volume" \
     -e GPTCHESS_GAMES_FILE="games_replication.tar.gz" \
     -e NOTEBOOK="replication_analysis.ipynb" \
