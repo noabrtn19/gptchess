@@ -66,19 +66,19 @@ This repository has two goals:
    docker run --rm -v "$(pwd):/app/volume" gpt_chess_analysis
    ```
    
-     The container will automatically execute all the `analysis.ipynb` notebook and produce an html file in the analysis_files folder. You can read this file or the notebook itself, to see the results by yourself.
+   The container will automatically execute all the `analysis.ipynb` notebook and produce an html file in the analysis_files folder. You can read this file or the notebook itself, to see the results by yourself.
 
 ### Encountered Issues and Improvements
-    Several small adaptations were made from the original article.
-    - several pandas methods (like `DataFrame.append`) were deprecated in the latests versions; we replaced them.
-    - the code for data collection (in `gpt-experiment.py`) and analysis (in `analysis.ipynb`) was greatly cleaned up and reduced, to focus only on the main results of the study (since a lot of digressions were made).
-    - The script now takes cli parameters to adapt the experimentation.
+   Several small adaptations were made from the original article.
+   - several pandas methods (like `DataFrame.append`) were deprecated in the latests versions; we replaced them.
+   - the code for data collection (in `gpt-experiment.py`) and analysis (in `analysis.ipynb`) was greatly cleaned up and reduced, to focus only on the main results of the study (since a lot of digressions were made).
+   - The script now takes cli parameters to adapt the experimentation.
 
 ### Is the Original Study Reproducible?
-    The main results of the original study have been successfully reproduced: by comparing them quantitatively to those of the article, we can see that we obtain the exact same conclusions. To sum them up:
-    - it seems that gpt-4, gpt-3.5-turbo and especially text-davinci-003 are unable to play a full legal chess game, while gpt-3.5-turbo-instruct makes an illegal move in 16% in the games (70% of which is just the model resigning with "1-0").
-    - gpt-3.5-turbo-instruct also shows a much better chess understanding, by playing at 1742 elo level against stockfish (if we assume that making an illegal move makes you lose).
-    - temperature and players mentioned in the PGN headers have no significant effect on the performances.
+   The main results of the original study have been successfully reproduced: by comparing them quantitatively to those of the article, we can see that we obtain the exact same conclusions. To sum them up:
+   - it seems that gpt-4, gpt-3.5-turbo and especially text-davinci-003 are unable to play a full legal chess game, while gpt-3.5-turbo-instruct makes an illegal move in 16% in the games (70% of which is just the model resigning with "1-0").
+   - gpt-3.5-turbo-instruct also shows a much better chess understanding, by playing at 1742 elo level against stockfish (if we assume that making an illegal move makes you lose).
+   - temperature and players mentioned in the PGN headers have no significant effect on the performances.
 
 ## Replicability
 
@@ -143,7 +143,8 @@ This repository has two goals:
    - llama-3.3-70b-versatile against Stockfish (normal chess):
    20 total games, with an average length of 10 moves.
    Out of 20 games, 0 were legal games and 20 were illegal games, hence 100% of illegal games.
-Illegal moves are:
+   
+   Illegal moves are:
 | illegal_move   |   count |
 |:---------------|--------:|
 | Qe7            |      10 |
@@ -193,7 +194,7 @@ Illegal moves are:
 | O-O            |       1 |
 | Kxd8           |       1 |
 
-It appears that, among the few games that were generated, only the following one was totally legal: 1. h4 g6 2. h5 gxh5 3. b3 Nf6 4. Rh3 d5 5. Bxf6 exf6 6. Rg3# 1-0
+It appears that, among the few games that were generated, only the following one was totally legal: 1. h4 g6 2. h5 gxh5 3. b3 Nf6 4. Rh3 d5 5. Bxf6 exf6 6. Rg3# 1-0.
 However, we can notice that no move would have been illegal in regular chess either: this game does not really prove the LLM can detect that it is Fischer Random.
 
 
