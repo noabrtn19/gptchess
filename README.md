@@ -104,8 +104,8 @@ This repository has two goals:
 ### Replication Execution
 1. **Instructions**  
    We replicated the study to test two new factors : 
-   - using another LLM: Llama
-   - playing chess960
+   - using another LLM: Llama (we generated 20 games against Stockfish, in similiar fashion to the original study)
+   - playing chess960 (we generated 20 games against Stockfish with Llama, and 18 against Stockfish with GPT 3.5-turbo-instruct, with the same parameters as the original study).
 
     Here is the parameters we used to generate 20 standard games between Groq LLama3-70b and Stockfish:
     ```bash
