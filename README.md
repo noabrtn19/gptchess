@@ -153,7 +153,7 @@ This repository has two goals:
     -e NOTEBOOK="replication_analysis.ipynb" \
     gpt_chess_analysis
     ```
-    This will automatically execute all the `replication_analysis.ipynb` notebook and export is as an HTML file in the analysis_files folder. You can read this file or the notebook itself, to see the results by yourself.
+    This will automatically execute all the `replication_analysis.ipynb` notebook and export is as an HTML file in the analysis_files folder. You can read this file or the notebook itself, to see the results by yourself. This command also generates a CSV file compiling all the games and their parameters.
 
 
 3. **Presentation and Analysis of Results**  
