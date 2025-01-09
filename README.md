@@ -63,8 +63,9 @@ This repository has two goals:
    
    Run the analysis container with the following volume:
    ```bash
-     docker run --rm -v "$(pwd):/app/volume" gpt_chess_analysis
-     ```
+   docker run --rm -v "$(pwd):/app/volume" gpt_chess_analysis
+   ```
+   
      The container will automatically execute all the `analysis.ipynb` notebook and produce an html file in the analysis_files folder. You can read this file or the notebook itself, to see the results by yourself.
 
 ### Encountered Issues and Improvements
